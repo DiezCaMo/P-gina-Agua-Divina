@@ -3,8 +3,8 @@ const claude = require('../providers/claude');
 
 const NO_DISPONIBLE_MSG =
   'No pude confirmar los datos de este vehiculo con las fuentes disponibles en este momento. ' +
-  'Para no dejarte sin respuesta, tienes dos opciones: te devuelvo tu pago completo, o hago una ' +
-  'segunda revision sin costo apenas tenga acceso a la fuente. ¿Cual prefieres, "reembolso" o "revision gratis"?';
+  'No te preocupes, esto no queda asi: escribeme "revision gratis" y lo vuelvo a intentar sin costo ' +
+  'apenas tenga acceso a la fuente.';
 
 function fallbackTemplate({ input, data }) {
   const lines = [];

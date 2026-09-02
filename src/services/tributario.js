@@ -3,8 +3,8 @@ const claude = require('../providers/claude');
 
 const NO_DISPONIBLE_MSG =
   'No pude confirmar el estado de este RUC en SUNAT con las fuentes disponibles en este momento. ' +
-  'Para no dejarte sin respuesta, tienes dos opciones: te devuelvo tu pago completo, o hago una ' +
-  'segunda revision sin costo apenas tenga acceso a la fuente. ¿Cual prefieres, "reembolso" o "revision gratis"?';
+  'No te preocupes, esto no queda asi: escribeme "revision gratis" y lo vuelvo a intentar sin costo ' +
+  'apenas tenga acceso a la fuente.';
 
 const AVISO_PRIVACIDAD =
   'Nota importante: esta verificacion solo revisa el estado publico de tu RUC en SUNAT ' +

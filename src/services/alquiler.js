@@ -2,9 +2,8 @@ const claude = require('../providers/claude');
 
 const NO_DISPONIBLE_MSG =
   'Recibi tu contrato en foto, pero en este momento no cuento con la herramienta para leer imagenes. ' +
-  'Para no dejarte sin respuesta, tienes dos opciones: te devuelvo tu pago completo, o me envias el ' +
-  'texto completo del contrato (copiado y pegado) y hago la revision sin costo adicional. ¿Cual prefieres, ' +
-  '"reembolso" o "enviar texto"?';
+  'No te preocupes, esto no queda asi: mandame el texto completo del contrato (copiado y pegado) y ' +
+  'hago la revision sin costo adicional. Escribe "enviar texto" para continuar.';
 
 const CHECKLIST = [
   { key: 'dni', label: 'Identificacion de las partes (DNI/RUC)', re: /\bDNI\b|\bRUC\b/i },

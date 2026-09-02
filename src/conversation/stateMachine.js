@@ -86,9 +86,8 @@ async function runVerificationAndDeliver(phone) {
     result = {
       status: 'no_disponible',
       message:
-        'Tuve un problema tecnico generando tu verificacion. Para no dejarte sin respuesta, tienes dos ' +
-        'opciones: te devuelvo tu pago completo, o hago una segunda revision sin costo. ¿Cual prefieres, ' +
-        '"reembolso" o "revision gratis"?',
+        'Tuve un problema tecnico generando tu verificacion. No te preocupes, esto no queda asi: ' +
+        'escribeme "revision gratis" y lo vuelvo a intentar sin costo.',
     };
   }
 
@@ -254,8 +253,8 @@ async function handleAwaitingRefundChoice(phone, conv, message) {
     return;
   }
 
-  const opciones = conv.service === 'alquiler' ? '"reembolso" o "enviar texto"' : '"reembolso" o "revision gratis"';
-  await whatsapp.sendText(phone, `No entendi tu respuesta. Por favor responde ${opciones}.`);
+  const opcion = conv.service === 'alquiler' ? '"enviar texto"' : '"revision gratis"';
+  await whatsapp.sendText(phone, `No entendi tu respuesta. Por favor escribe ${opcion}.`);
 }
 
 async function confirmOrder(adminPhone, orderId) {
