@@ -19,6 +19,20 @@ function findPhoneByOrderId(orderId) {
   return row ? row.phone : null;
 }
 
+// Permite que un numero de administrador se pruebe a si mismo como si fuera
+// cliente, sin tener que cambiar variables de entorno cada vez.
+function isTestMode(phone) {
+  const row = db.prepare('SELECT enabled FROM admin_test_mode WHERE phone = ?').get(phone);
+  return Boolean(row && row.enabled);
+}
+
+function setTestMode(phone, enabled) {
+  db.prepare(
+    `INSERT INTO admin_test_mode (phone, enabled) VALUES (?, ?)
+     ON CONFLICT(phone) DO UPDATE SET enabled = excluded.enabled`
+  ).run(phone, enabled ? 1 : 0);
+}
+
 async function notifyAdmins(text) {
   for (const admin of config.adminNumbers) {
     try {
@@ -261,8 +275,25 @@ async function handleAdminCommand(adminPhone, text) {
 
 async function handleIncoming(phone, message) {
   if (config.adminNumbers.includes(phone) && message.type === 'text') {
-    await handleAdminCommand(phone, message.text.trim());
-    return;
+    const adminText = message.text.trim().toLowerCase();
+
+    if (adminText === 'modo cliente') {
+      setTestMode(phone, true);
+      await whatsapp.sendText(
+        phone,
+        'Listo, ahora te voy a tratar como cliente para que puedas probar el bot. Escribe "modo admin" cuando quieras volver a los comandos de administrador.'
+      );
+      return;
+    }
+    if (adminText === 'modo admin') {
+      setTestMode(phone, false);
+      await whatsapp.sendText(phone, 'Listo, volviste a modo administrador.');
+      return;
+    }
+    if (!isTestMode(phone)) {
+      await handleAdminCommand(phone, message.text.trim());
+      return;
+    }
   }
 
   let conv = store.get(phone);

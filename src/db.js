@@ -39,6 +39,11 @@ db.exec(`
     id TEXT PRIMARY KEY,
     received_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS admin_test_mode (
+    phone TEXT PRIMARY KEY,
+    enabled INTEGER NOT NULL DEFAULT 0
+  );
 `);
 
 module.exports = db;
