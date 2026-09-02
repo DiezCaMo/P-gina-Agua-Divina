@@ -37,7 +37,7 @@ function readyForPaymentIntro() {
 }
 
 function waitingPayment() {
-  return 'Quedo atento a tu confirmacion. Apenas hagas el pago, escribeme "ya pague" para continuar.';
+  return 'Quedo atento. Apenas hagas el pago, mandame la captura/pantallazo del comprobante para continuar.';
 }
 
 function paymentReportedAutoMode() {
@@ -53,8 +53,8 @@ function paymentReportedManualMode() {
 
 function paymentRejected() {
   return (
-    'No pude confirmar tu pago con el codigo que enviaste. Por favor revisa el monto y el codigo, ' +
-    'y vuelve a escribirme "ya pague" cuando lo hayas verificado. Si crees que es un error, escribe *ayuda*.'
+    'No pude confirmar tu pago. Por favor revisa el monto y vuelve a mandarme la captura del comprobante ' +
+    'cuando lo hayas verificado. Si crees que es un error, escribe *ayuda*.'
   );
 }
 

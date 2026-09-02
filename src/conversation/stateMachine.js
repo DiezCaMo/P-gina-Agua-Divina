@@ -113,7 +113,7 @@ async function finalizeCollectionAndAskPayment(phone, service, data) {
 
   const qrUrl = payments.qrImageUrl();
   if (qrUrl) {
-    await whatsapp.sendImage(phone, qrUrl, `Tambien puedes pagar escaneando este QR. Usa el codigo ${orderId} como referencia.`);
+    await whatsapp.sendImage(phone, qrUrl, 'Tambien puedes pagar escaneando este QR.');
   }
 }
 

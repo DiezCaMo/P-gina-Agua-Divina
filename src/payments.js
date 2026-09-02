@@ -24,16 +24,15 @@ function paymentInstructions(code) {
   const lines = [];
   lines.push(`Listo, ya tengo todo lo que necesito para hacer tu verificacion.`);
   lines.push('');
-  lines.push(`El costo del servicio es S/ ${p.priceSoles}.`);
-  lines.push(`Tu codigo de pago es: *${code}*`);
+  lines.push(`El costo del servicio es S/ ${p.priceSoles}. Tu codigo de pedido es *${code}* (es solo para que ambos lo identifiquemos si necesitas escribirme despues).`);
   lines.push('');
-  lines.push('Por favor realiza el pago por uno de estos medios y coloca el codigo como referencia/glosa de la operacion:');
+  lines.push('Por favor realiza el pago por uno de estos medios:');
   if (p.yapeNumber) lines.push(`- Yape: ${p.yapeNumber} (${p.accountHolder})`);
   if (p.plinNumber) lines.push(`- Plin: ${p.plinNumber} (${p.accountHolder})`);
   if (p.bankName && p.bankAccount) lines.push(`- Transferencia ${p.bankName}: cuenta ${p.bankAccount}${p.bankCci ? ` (CCI: ${p.bankCci})` : ''}`);
   if (qrImageUrl()) lines.push(`- Tambien te mando el QR de BiPay para que pagues escaneandolo.`);
   lines.push('');
-  lines.push(`Si tu app no te deja escribir una glosa o referencia, no hay problema: apenas hagas el pago, escribeme "ya pague" y envia el codigo *${code}* junto con la captura del pago.`);
+  lines.push('Apenas hagas el pago, mandame por aqui la captura/pantallazo del comprobante y confirmo enseguida.');
   return lines.join('\n');
 }
 
