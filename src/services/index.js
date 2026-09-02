@@ -1,8 +1,10 @@
 const validators = require('../conversation/validators');
 const autos = require('./autos');
 const alquiler = require('./alquiler');
-const papeletas = require('./papeletas');
 const tributario = require('./tributario');
+// El servicio de papeletas (./papeletas) esta pausado por ahora: no hay un
+// proveedor de datos confiable conectado todavia. El codigo se queda listo
+// para cuando se agregue, solo hay que volver a incluirlo aqui abajo.
 
 const SERVICES = {
   '1': {
@@ -33,19 +35,8 @@ const SERVICES = {
     run: alquiler.run,
   },
   '3': {
-    key: 'papeletas',
-    menuLabel: '3. Verificacion de papeletas y multas de transito pendientes',
-    name: 'verificacion de papeletas de transito',
-    confirmMsg: 'Perfecto, vamos a revisar si tienes papeletas pendientes.',
-    fields: [
-      { key: 'brevete', prompt: '¿Cual es tu numero de brevete (licencia de conducir)?', validate: validators.brevete },
-      { key: 'placa', prompt: '¿Cual es la placa del vehiculo?', validate: validators.placa },
-    ],
-    run: papeletas.run,
-  },
-  '4': {
     key: 'tributario',
-    menuLabel: '4. Verificacion de riesgo tributario ante SUNAT (independientes)',
+    menuLabel: '3. Verificacion de riesgo tributario ante SUNAT (independientes)',
     name: 'verificacion de riesgo tributario SUNAT',
     confirmMsg: 'Perfecto, vamos a revisar tu situacion tributaria basica.',
     fields: [
