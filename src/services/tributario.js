@@ -1,5 +1,6 @@
 const sunat = require('../providers/sunat');
 const claude = require('../providers/claude');
+const logger = require('../utils/logger');
 
 const NO_DISPONIBLE_MSG =
   'No pude confirmar el estado de este RUC en SUNAT con las fuentes disponibles en este momento. ' +
@@ -55,6 +56,7 @@ async function run({ input }) {
   const result = await sunat.consultarRuc(input.ruc);
 
   if (!result.available) {
+    logger.warn('Consulta RUC no disponible:', result.reason, result.detail || '');
     return { status: 'no_disponible', message: NO_DISPONIBLE_MSG };
   }
 
