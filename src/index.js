@@ -102,20 +102,20 @@ app.post('/webhook', async (req, res) => {
           try {
             await handleIncoming(parsed.from, parsed);
           } catch (err) {
-            logger.error('Error procesando mensaje de', parsed.from, err);
+            logger.error('Error procesando mensaje de', parsed.from, ':', logger.errorDetail(err));
             try {
               const whatsapp = require('./whatsapp');
               const messages = require('./conversation/messages');
               await whatsapp.sendText(parsed.from, messages.genericError());
             } catch (sendErr) {
-              logger.error('No se pudo enviar mensaje de error al cliente', sendErr);
+              logger.error('No se pudo enviar mensaje de error al cliente:', logger.errorDetail(sendErr));
             }
           }
         }
       }
     }
   } catch (err) {
-    logger.error('Error procesando webhook', err);
+    logger.error('Error procesando webhook:', logger.errorDetail(err));
   }
 });
 
