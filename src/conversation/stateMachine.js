@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const store = require('./store');
 const messages = require('./messages');
 const services = require('../services');
@@ -41,6 +43,31 @@ async function notifyAdmins(text) {
       // seguimos con los demas admins aunque uno falle
     }
   }
+}
+
+async function notifyAdminsWithButtons(text, buttons, imageUrl) {
+  for (const admin of config.adminNumbers) {
+    try {
+      await whatsapp.sendButtons(admin, text, buttons, imageUrl);
+    } catch (err) {
+      // seguimos con los demas admins aunque uno falle
+    }
+  }
+}
+
+// Descarga la captura de pago que mando el cliente y la deja accesible
+// publicamente para poder mostrarsela al administrador. Se guarda en
+// data/uploads (no se sube a GitHub) y se sobreescribe si el cliente
+// manda varias capturas para el mismo pedido.
+async function saveProofImage(orderId, mediaId) {
+  if (!config.publicBaseUrl) return null;
+  const media = await whatsapp.downloadMedia(mediaId);
+  const ext = media.contentType.includes('png') ? 'png' : 'jpg';
+  const dir = path.join(__dirname, '..', '..', 'data', 'uploads');
+  fs.mkdirSync(dir, { recursive: true });
+  const filename = `${orderId}.${ext}`;
+  fs.writeFileSync(path.join(dir, filename), media.buffer);
+  return `${config.publicBaseUrl}/uploads/${filename}`;
 }
 
 async function runVerificationAndDeliver(phone) {
@@ -166,9 +193,23 @@ async function handleAwaitingPayment(phone, conv, message) {
   if (config.requireManualPaymentConfirmation) {
     store.save(phone, { state: 'awaiting_admin', service: conv.service, data: conv.data, orderId: conv.order_id });
     await whatsapp.sendText(phone, messages.paymentReportedManualMode());
-    await notifyAdmins(
-      `Nuevo pago reportado.\nCodigo: ${order.id}\nCliente: ${phone}\nServicio: ${service.name}\nMonto: S/ ${order.price_soles}\n\n` +
-        `Responde "CONFIRMAR ${order.id}" si ya viste el deposito, o "RECHAZAR ${order.id}" si no aparece.`
+
+    let proofImageUrl = null;
+    if (message.type === 'image') {
+      try {
+        proofImageUrl = await saveProofImage(order.id, message.mediaId);
+      } catch (err) {
+        // si falla la descarga, igual avisamos al admin sin la foto
+      }
+    }
+
+    await notifyAdminsWithButtons(
+      `Nuevo pago reportado.\nCodigo: ${order.id}\nCliente: ${phone}\nServicio: ${service.name}\nMonto: S/ ${order.price_soles}`,
+      [
+        { id: `confirm_${order.id}`, title: 'Confirmar pago' },
+        { id: `reject_${order.id}`, title: 'No veo el pago' },
+      ],
+      proofImageUrl
     );
   } else {
     await whatsapp.sendText(phone, messages.paymentReportedAutoMode());
@@ -217,39 +258,60 @@ async function handleAwaitingRefundChoice(phone, conv, message) {
   await whatsapp.sendText(phone, `No entendi tu respuesta. Por favor responde ${opciones}.`);
 }
 
+async function confirmOrder(adminPhone, orderId) {
+  const order = payments.getOrder(orderId);
+  if (!order) {
+    await whatsapp.sendText(adminPhone, `No encontre el pedido ${orderId}.`);
+    return;
+  }
+  payments.confirmPayment(orderId);
+  const phone = findPhoneByOrderId(orderId);
+  await whatsapp.sendText(adminPhone, `Pago confirmado para ${orderId}. Generando verificacion para el cliente...`);
+  if (phone) await runVerificationAndDeliver(phone);
+}
+
+async function rejectOrder(adminPhone, orderId) {
+  const order = payments.getOrder(orderId);
+  if (!order) {
+    await whatsapp.sendText(adminPhone, `No encontre el pedido ${orderId}.`);
+    return;
+  }
+  payments.rejectPayment(orderId);
+  const phone = findPhoneByOrderId(orderId);
+  if (phone) {
+    store.save(phone, { state: 'awaiting_payment', service: order.service, data: order.service_data, orderId });
+    await whatsapp.sendText(phone, messages.paymentRejected());
+  }
+  await whatsapp.sendText(adminPhone, `Pago rechazado para ${orderId}. Se avisó al cliente.`);
+}
+
+// Cuando el admin toca uno de los botones "Confirmar pago" / "No veo el pago".
+async function handleAdminButton(adminPhone, buttonId) {
+  const confirmMatch = buttonId.match(/^confirm_(VP-[A-Z0-9]+)$/i);
+  const rejectMatch = buttonId.match(/^reject_(VP-[A-Z0-9]+)$/i);
+
+  if (confirmMatch) {
+    await confirmOrder(adminPhone, confirmMatch[1].toUpperCase());
+    return;
+  }
+  if (rejectMatch) {
+    await rejectOrder(adminPhone, rejectMatch[1].toUpperCase());
+    return;
+  }
+}
+
 async function handleAdminCommand(adminPhone, text) {
   const confirmMatch = text.match(/^CONFIRMAR\s+(VP-[A-Z0-9]+)/i);
   const rejectMatch = text.match(/^RECHAZAR\s+(VP-[A-Z0-9]+)/i);
   const statusMatch = text.match(/^ESTADO\s+(VP-[A-Z0-9]+)/i);
 
   if (confirmMatch) {
-    const orderId = confirmMatch[1].toUpperCase();
-    const order = payments.getOrder(orderId);
-    if (!order) {
-      await whatsapp.sendText(adminPhone, `No encontre el pedido ${orderId}.`);
-      return;
-    }
-    payments.confirmPayment(orderId);
-    const phone = findPhoneByOrderId(orderId);
-    await whatsapp.sendText(adminPhone, `Pago confirmado para ${orderId}. Generando verificacion para el cliente...`);
-    if (phone) await runVerificationAndDeliver(phone);
+    await confirmOrder(adminPhone, confirmMatch[1].toUpperCase());
     return;
   }
 
   if (rejectMatch) {
-    const orderId = rejectMatch[1].toUpperCase();
-    const order = payments.getOrder(orderId);
-    if (!order) {
-      await whatsapp.sendText(adminPhone, `No encontre el pedido ${orderId}.`);
-      return;
-    }
-    payments.rejectPayment(orderId);
-    const phone = findPhoneByOrderId(orderId);
-    if (phone) {
-      store.save(phone, { state: 'awaiting_payment', service: order.service, data: order.service_data, orderId });
-      await whatsapp.sendText(phone, messages.paymentRejected());
-    }
-    await whatsapp.sendText(adminPhone, `Pago rechazado para ${orderId}. Se avisó al cliente.`);
+    await rejectOrder(adminPhone, rejectMatch[1].toUpperCase());
     return;
   }
 
@@ -269,11 +331,17 @@ async function handleAdminCommand(adminPhone, text) {
 
   await whatsapp.sendText(
     adminPhone,
-    'Comandos disponibles:\nCONFIRMAR <codigo>\nRECHAZAR <codigo>\nESTADO <codigo>'
+    'Comandos disponibles:\nCONFIRMAR <codigo>\nRECHAZAR <codigo>\nESTADO <codigo>\n\n' +
+      'O simplemente toca los botones "Confirmar pago" / "No veo el pago" que te mando en cada aviso de pago.'
   );
 }
 
 async function handleIncoming(phone, message) {
+  if (config.adminNumbers.includes(phone) && message.buttonId) {
+    await handleAdminButton(phone, message.buttonId);
+    return;
+  }
+
   if (config.adminNumbers.includes(phone) && message.type === 'text') {
     const adminText = message.text.trim().toLowerCase();
 

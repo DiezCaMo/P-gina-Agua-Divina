@@ -28,6 +28,28 @@ async function sendImage(to, imageUrl, caption) {
   });
 }
 
+// Manda un mensaje con hasta 3 botones de respuesta rapida (el cliente/admin
+// solo toca uno, no necesita escribir nada). Si headerImageUrl esta presente,
+// se muestra una foto arriba del texto (ej. la captura del pago).
+async function sendButtons(to, bodyText, buttons, headerImageUrl) {
+  const interactive = {
+    type: 'button',
+    body: { text: bodyText },
+    action: {
+      buttons: buttons.map((b) => ({ type: 'reply', reply: { id: b.id, title: b.title } })),
+    },
+  };
+  if (headerImageUrl) {
+    interactive.header = { type: 'image', image: { link: headerImageUrl } };
+  }
+  return graph.post(`/${config.whatsapp.phoneNumberId}/messages`, {
+    messaging_product: 'whatsapp',
+    to,
+    type: 'interactive',
+    interactive,
+  });
+}
+
 async function markAsRead(messageId) {
   try {
     await graph.post(`/${config.whatsapp.phoneNumberId}/messages`, {
@@ -58,4 +80,4 @@ async function downloadMedia(mediaId) {
   };
 }
 
-module.exports = { sendText, sendImage, markAsRead, downloadMedia };
+module.exports = { sendText, sendImage, sendButtons, markAsRead, downloadMedia };

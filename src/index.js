@@ -20,6 +20,10 @@ app.use(
 // Archivos publicos (ej. el QR de pago) que WhatsApp necesita poder descargar.
 app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
+// Capturas de pago que los clientes envian, guardadas temporalmente para
+// que WhatsApp pueda mostrarselas al administrador.
+app.use('/uploads', express.static(path.join(__dirname, '..', 'data', 'uploads')));
+
 app.get('/', (req, res) => res.send('Verifica Peru bot esta funcionando.'));
 
 // Verificacion del webhook (Meta la llama una vez al configurar el webhook).
@@ -48,7 +52,12 @@ function parseIncomingMessage(waMessage) {
       return { ...base, type: 'text', text: waMessage.button.text };
     case 'interactive':
       if (waMessage.interactive.button_reply) {
-        return { ...base, type: 'text', text: waMessage.interactive.button_reply.title };
+        return {
+          ...base,
+          type: 'text',
+          text: waMessage.interactive.button_reply.title,
+          buttonId: waMessage.interactive.button_reply.id,
+        };
       }
       if (waMessage.interactive.list_reply) {
         return { ...base, type: 'text', text: waMessage.interactive.list_reply.title };
