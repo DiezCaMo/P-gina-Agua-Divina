@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const config = require('./config');
 const db = require('./db'); // asegura que las tablas existan al arrancar
@@ -15,6 +16,9 @@ app.use(
     },
   })
 );
+
+// Archivos publicos (ej. el QR de pago) que WhatsApp necesita poder descargar.
+app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/', (req, res) => res.send('Verifica Peru bot esta funcionando.'));
 

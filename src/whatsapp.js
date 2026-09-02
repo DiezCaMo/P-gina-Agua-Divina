@@ -19,6 +19,15 @@ async function sendText(to, body) {
   });
 }
 
+async function sendImage(to, imageUrl, caption) {
+  return graph.post(`/${config.whatsapp.phoneNumberId}/messages`, {
+    messaging_product: 'whatsapp',
+    to,
+    type: 'image',
+    image: { link: imageUrl, caption },
+  });
+}
+
 async function markAsRead(messageId) {
   try {
     await graph.post(`/${config.whatsapp.phoneNumberId}/messages`, {
@@ -49,4 +58,4 @@ async function downloadMedia(mediaId) {
   };
 }
 
-module.exports = { sendText, markAsRead, downloadMedia };
+module.exports = { sendText, sendImage, markAsRead, downloadMedia };

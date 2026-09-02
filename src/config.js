@@ -24,6 +24,10 @@ const config = {
   adminNumbers: list(process.env.ADMIN_WHATSAPP_NUMBERS),
   requireManualPaymentConfirmation: bool(process.env.REQUIRE_MANUAL_PAYMENT_CONFIRMATION, true),
 
+  // URL publica donde corre este servidor (ej. https://tu-app.onrender.com).
+  // Se usa para armar enlaces a archivos publicos, como el QR de pago.
+  publicBaseUrl: (process.env.PUBLIC_BASE_URL || '').replace(/\/$/, ''),
+
   payment: {
     priceSoles: Number(process.env.PAYMENT_PRICE_SOLES || 20),
     yapeNumber: process.env.PAYMENT_YAPE_NUMBER || '',
@@ -32,6 +36,9 @@ const config = {
     bankAccount: process.env.PAYMENT_BANK_ACCOUNT || '',
     bankCci: process.env.PAYMENT_BANK_CCI || '',
     accountHolder: process.env.PAYMENT_ACCOUNT_HOLDER || 'Verifica Peru',
+    // Nombre del archivo del QR (billetera BiPay, etc.) dentro de la carpeta /public.
+    // Se manda como foto junto con las instrucciones de pago, si esta configurado.
+    qrImageFile: process.env.PAYMENT_QR_IMAGE_FILE || '',
   },
 
   dbPath: process.env.DB_PATH || './data/verifica_peru.db',

@@ -69,6 +69,11 @@ async function finalizeCollectionAndAskPayment(phone, service, data) {
   const orderId = payments.createOrder({ phone, service: service.key, serviceData: data });
   store.save(phone, { state: 'awaiting_payment', service: service.key, data, orderId });
   await whatsapp.sendText(phone, payments.paymentInstructions(orderId));
+
+  const qrUrl = payments.qrImageUrl();
+  if (qrUrl) {
+    await whatsapp.sendImage(phone, qrUrl, `Tambien puedes pagar escaneando este QR. Usa el codigo ${orderId} como referencia.`);
+  }
 }
 
 async function handleMenuChoice(phone, text) {

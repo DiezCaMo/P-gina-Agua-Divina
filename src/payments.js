@@ -14,6 +14,11 @@ function generateUniqueCode() {
   return code;
 }
 
+function qrImageUrl() {
+  if (!config.payment.qrImageFile || !config.publicBaseUrl) return null;
+  return `${config.publicBaseUrl}/public/${config.payment.qrImageFile}`;
+}
+
 function paymentInstructions(code) {
   const p = config.payment;
   const lines = [];
@@ -26,6 +31,7 @@ function paymentInstructions(code) {
   if (p.yapeNumber) lines.push(`- Yape: ${p.yapeNumber} (${p.accountHolder})`);
   if (p.plinNumber) lines.push(`- Plin: ${p.plinNumber} (${p.accountHolder})`);
   if (p.bankName && p.bankAccount) lines.push(`- Transferencia ${p.bankName}: cuenta ${p.bankAccount}${p.bankCci ? ` (CCI: ${p.bankCci})` : ''}`);
+  if (qrImageUrl()) lines.push(`- Tambien te mando el QR de BiPay para que pagues escaneandolo.`);
   lines.push('');
   lines.push(`Si tu app no te deja escribir una glosa o referencia, no hay problema: apenas hagas el pago, escribeme "ya pague" y envia el codigo *${code}* junto con la captura del pago.`);
   return lines.join('\n');
@@ -81,6 +87,7 @@ function findLatestOpenOrderForPhone(phone) {
 
 module.exports = {
   paymentInstructions,
+  qrImageUrl,
   createOrder,
   getOrder,
   reportPayment,
