@@ -13,13 +13,13 @@ const AVISO_PRIVACIDAD =
 
 function riesgoPorEstado(data) {
   const estado = (data.estado || '').toUpperCase();
-  const condicion = (data.condicion || '').toUpperCase();
+  const condicion = (data.condicionDomicilio || '').toUpperCase();
   const riesgos = [];
   if (estado.includes('BAJA') || estado.includes('SUSPENSION')) {
     riesgos.push(`El RUC figura con estado "${data.estado}" en vez de ACTIVO.`);
   }
   if (condicion.includes('NO HABIDO') || condicion.includes('NO HALLADO')) {
-    riesgos.push(`La condicion del RUC es "${data.condicion}", lo que es una señal de riesgo tributario.`);
+    riesgos.push(`La condicion del RUC es "${data.condicionDomicilio}", lo que es una señal de riesgo tributario.`);
   }
   return riesgos;
 }
@@ -28,7 +28,7 @@ function fallbackTemplate({ input, data }) {
   const riesgosEstado = riesgoPorEstado(data);
   const lines = [];
   lines.push('RESUMEN:');
-  lines.push(`RUC ${input.ruc} — Razon social: ${data.razon_social || 'no disponible'}. Estado: ${data.estado || 'no disponible'}, condicion: ${data.condicion || 'no disponible'}.`);
+  lines.push(`RUC ${input.ruc} — Razon social: ${data.razonSocial || 'no disponible'}. Estado: ${data.estado || 'no disponible'}, condicion: ${data.condicionDomicilio || 'no disponible'}.`);
   lines.push('');
   lines.push('RIESGOS ENCONTRADOS:');
   if (riesgosEstado.length === 0) {
