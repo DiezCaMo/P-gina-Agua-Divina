@@ -27,7 +27,7 @@ function paymentInstructions(code) {
   lines.push(`El costo del servicio es S/ ${p.priceSoles}. Tu codigo de pedido es *${code}* (es solo para que ambos lo identifiquemos si necesitas escribirme despues).`);
   lines.push('');
   lines.push('Por favor realiza el pago por uno de estos medios:');
-  if (p.yapeNumber) lines.push(`- Yape: ${p.yapeNumber} (${p.accountHolder})`);
+  if (p.yapeNumber) lines.push(`- Yape: ${p.yapeNumber}`);
   if (p.plinNumber) lines.push(`- Plin: ${p.plinNumber} (${p.accountHolder})`);
   if (p.bankName && p.bankAccount) lines.push(`- Transferencia ${p.bankName}: cuenta ${p.bankAccount}${p.bankCci ? ` (CCI: ${p.bankCci})` : ''}`);
   if (qrImageUrl()) lines.push(`- Tambien te mando el QR de BiPay para que pagues escaneandolo.`);
